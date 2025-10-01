@@ -23,11 +23,17 @@ const port = process.env.PORT || 5000;
 const corsOptions = {
   origin: function (origin, callback) {
     console.log('CORS request from origin:', origin);
-    const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000'];
+    // Get allowed origins from environment variable or use defaults
+    const allowedOrigins = process.env.ALLOWED_ORIGINS 
+      ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+      : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+    
+    // Allow requests with no origin (like mobile apps or curl)
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       console.warn('CORS blocked for origin:', origin);
+      console.log('Allowed origins:', allowedOrigins);
       callback(new Error('Not allowed by CORS'));
     }
   },
