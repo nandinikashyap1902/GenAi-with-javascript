@@ -55,25 +55,58 @@ This guide will walk you through deploying your RAG system backend to Railway.
 
 ---
 
-### **Step 3: Add Qdrant Service**
+### **Step 3: Set Up Qdrant Vector Database**
 
-1. **Add Qdrant to your Railway project**
-   
-   **Option A: Use Qdrant Template (Recommended)**
-   - In your Railway project dashboard, click "New"
-   - Select "Database" → "Add Qdrant"
-   - Railway will create a Qdrant instance for you
+You have two options for Qdrant:
 
-   **Option B: Deploy from Docker**
-   - Click "New" → "Empty Service"
-   - Go to "Settings" → "Source"
-   - Select "Docker Image"
-   - Image: `qdrant/qdrant:v1.7.0`
-   - Add volumes: `/qdrant/storage`
+#### **Option A: Use Qdrant Cloud** (Recommended - Easiest)
 
-2. **Note the Qdrant URL**
-   - Railway will provide an internal URL like: `qdrant.railway.internal:6333`
-   - You'll use this in environment variables
+1. **Sign up for Qdrant Cloud**
+   - Go to [cloud.qdrant.io](https://cloud.qdrant.io)
+   - Sign up for free account
+   - Free tier: 1GB storage, perfect for testing
+
+2. **Create a Cluster**
+   - Click "Create Cluster"
+   - Select "Free" tier
+   - Choose a region (closest to your Railway region)
+   - Wait ~2-3 minutes for provisioning
+
+3. **Get Connection Details**
+   - Copy the **Cluster URL** (e.g., `https://xyz-example.aws.cloud.qdrant.io:6333`)
+   - Copy the **API Key** from cluster settings
+   - You'll add these to Railway environment variables
+
+#### **Option B: Deploy Qdrant on Railway** (More Complex)
+
+1. **Create New Service**
+   - In your Railway project, click "New"
+   - Select "Empty Service"
+   - Name it "qdrant"
+
+2. **Configure Docker Deployment**
+   - Go to service "Settings" → "Source"
+   - Under "Deploy from Docker Image"
+   - Enter image: `qdrant/qdrant:v1.7.0`
+   - Click "Deploy"
+
+3. **Add Volume (Important for persistence)**
+   - Go to "Settings" → "Volumes"
+   - Click "Add Volume"
+   - Mount path: `/qdrant/storage`
+   - Size: 1GB (or more)
+
+4. **Configure Networking**
+   - Qdrant will be available at: `qdrant.railway.internal:6333`
+   - No need to expose publicly
+
+5. **Wait for Deployment**
+   - Check logs to ensure it's running
+   - Should see: "Qdrant is ready"
+
+**Which option to choose?**
+- **Qdrant Cloud**: Easier, managed, free tier available
+- **Railway Qdrant**: More control, all in one place, costs ~$2-4/month
 
 ---
 
@@ -85,25 +118,45 @@ This guide will walk you through deploying your RAG system backend to Railway.
 
 3. **Add the following environment variables:**
 
+   **If using Qdrant Cloud (Option A):**
    ```bash
    # Required Variables
    OPENAI_API_KEY=sk-your-actual-openai-api-key-here
    
-   # Qdrant Configuration (use Railway's internal URL)
-   QDRANT_URL=http://qdrant.railway.internal:6333
+   # Qdrant Cloud Configuration
+   QDRANT_URL=https://xyz-example.aws.cloud.qdrant.io:6333
+   QDRANT_API_KEY=your-qdrant-api-key-here
    
    # Server Configuration
    PORT=5000
    NODE_ENV=production
    
-   # CORS - Add your Vercel frontend URL later
-   ALLOWED_ORIGINS=http://localhost:3000
+   # CORS - Add your Vercel frontend URL
+   ALLOWED_ORIGINS=https://gen-ai-with-javascript.vercel.app,http://localhost:3000
+   ```
+
+   **If using Railway Qdrant (Option B):**
+   ```bash
+   # Required Variables
+   OPENAI_API_KEY=sk-your-actual-openai-api-key-here
+   
+   # Railway Qdrant Configuration (internal networking)
+   QDRANT_URL=http://qdrant.railway.internal:6333
+   QDRANT_API_KEY=
+   
+   # Server Configuration
+   PORT=5000
+   NODE_ENV=production
+   
+   # CORS - Add your Vercel frontend URL
+   ALLOWED_ORIGINS=https://gen-ai-with-javascript.vercel.app,http://localhost:3000
    ```
 
    **Important Notes:**
    - Replace `sk-your-actual-openai-api-key-here` with your real OpenAI API key
-   - The `QDRANT_URL` should use Railway's internal networking
-   - You'll update `ALLOWED_ORIGINS` after deploying the frontend
+   - For Qdrant Cloud: Use the URL and API key from your cluster dashboard
+   - For Railway Qdrant: Use `qdrant.railway.internal:6333` (Railway's internal networking)
+   - Update `ALLOWED_ORIGINS` with your actual Vercel URL
 
 4. **Save the variables** - Railway will auto-deploy
 
