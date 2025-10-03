@@ -15,7 +15,6 @@ const { WebPDFLoader } = require('langchain/document_loaders/web/pdf');
 const { QdrantClient } = require('@qdrant/js-client-rest');
 const { ChatOpenAI } = require('langchain/chat_models/openai');
 const puppeteer = require('puppeteer');
-
 const app = express();
 const port = process.env.PORT || 5000;
 
